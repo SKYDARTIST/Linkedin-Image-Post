@@ -1,0 +1,211 @@
+{
+  "name": "Linkedin Image Post",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "LinkedIn Post Generator",
+        "formDescription": "Enter a topic \u2014 I'll research it and create a LinkedIn post with an image",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Topic",
+              "placeholder": "e.g. AI agents in 2026",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -400,
+        -16
+      ],
+      "id": "e8da9631-afc1-4083-a503-3f977a6e429e",
+      "name": "On form submission"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Research this topic and write a LinkedIn post about it: {{ $json.Topic }}\n",
+        "options": {
+          "systemMessage": "You are a LinkedIn ghostwriter. Use the Tavily tool to research the topic, then write ONE engaging LinkedIn post.\n\nRules:\n- Hook in the first line (make people stop scrolling)\n- Short punchy lines, line breaks between thoughts\n- Conversational, no corporate jargon\n- 3-5 relevant hashtags at the end\n- Output ONLY the post text, nothing else"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -192,
+        -16
+      ],
+      "id": "7dc92630-c471-4903-a3cf-2488a6fdc6c7",
+      "name": "Linkedin Post agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        208
+      ],
+      "id": "f6fc92a9-1124-4a26-aedf-c4ca47ef23d5",
+      "name": "Google Gemini Chat Model"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        176
+      ],
+      "id": "60999a9d-cf65-4ffa-b50b-b391237cc7ab",
+      "name": "Search in Tavily"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create an image generation prompt for this LinkedIn post:\n\n{{ $json.output }}",
+        "options": {
+          "systemMessage": "You turn a LinkedIn post into ONE image-generation prompt.\n\nRules:\n- Describe a single, clean, professional visual that matches the post's theme\n- Modern, minimal, suitable for LinkedIn (no text in the image)\n- Be vivid and specific about style, colors, composition\n- Output ONLY the image prompt \u2014 no quotes, no explanation"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        160,
+        -16
+      ],
+      "id": "3d44e380-6628-47a8-a26b-23d1f7eb774a",
+      "name": "Image prompt agent"
+    },
+    {
+      "parameters": {
+        "url": "=https://image.pollinations.ai/prompt/{{ encodeURIComponent($json.output) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        576,
+        48
+      ],
+      "id": "e90a67d0-efbd-4c44-866b-2978f44cb271",
+      "name": "generate image"
+    },
+    {
+      "parameters": {
+        "sendTo": "review@example.com",
+        "subject": "=New LinkedIn Post: {{ $('On form submission').item.json.Topic }}",
+        "emailType": "text",
+        "message": "={{ $('Linkedin Post agent').item.json.output }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        48
+      ],
+      "id": "d4c47eed-10da-4bab-906b-1bbde10a700d",
+      "name": "Send a message"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Linkedin Post agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Linkedin Post agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Image prompt agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "Linkedin Post agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Post agent": {
+      "main": [
+        [
+          {
+            "node": "Image prompt agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image prompt agent": {
+      "main": [
+        [
+          {
+            "node": "generate image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "generate image": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}
