@@ -6,6 +6,10 @@ The output is intentionally sent to Gmail rather than published directly to Link
 
 ## Preview
 
+### AI-generated image
+
+![Generated image for the LinkedIn post](docs/assets/linkedin-post-generated-image.png)
+
 ### Generated LinkedIn post in Gmail
 
 ![LinkedIn post delivered to Gmail](docs/assets/linkedin-post-gmail-output-top.png)
@@ -13,10 +17,6 @@ The output is intentionally sent to Gmail rather than published directly to Link
 ### Post body, hashtags, and attached image
 
 ![LinkedIn post body with attached generated image](docs/assets/linkedin-post-gmail-output-attachment.png)
-
-### AI-generated image
-
-![Generated image for the LinkedIn post](docs/assets/linkedin-post-generated-image.png)
 
 ## What this workflow does
 
@@ -161,7 +161,7 @@ Full node contract: [`docs/architecture.md`](docs/architecture.md).
 4. Confirm the model selection:
    - Both agents use a Gemini text model (for example `gemini-2.5-flash-lite`).
    - The image step uses the HTTP Request node (free image endpoint), or a billed Gemini image model if higher quality is required.
-5. Set the Gmail `To` field to the inbox that should receive the drafts.
+5. Replace the placeholder Gmail `To` value (`review@example.com`) with the inbox that should receive the drafts.
 6. Submit a test topic and execute the workflow once.
 7. Verify the email arrives with the post body and the attached image.
 

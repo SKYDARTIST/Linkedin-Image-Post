@@ -24,7 +24,7 @@
 - [ ] Gmail OAuth2 credential created and attached to the Send node.
 - [ ] Both agents use a Gemini text model (for example `gemini-2.5-flash-lite`).
 - [ ] Image node returns a file in the `data` field.
-- [ ] Gmail `To` field set to the review inbox.
+- [ ] Gmail `To` field changed from `review@example.com` to the review inbox.
 - [ ] Test topic submitted and a single run verified end to end.
 - [ ] Email received with the post body and the attached image.
 
